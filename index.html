@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Pandemia Ska | VIRUS DETECTADO</title>
+    
+    <!-- Fuentes: Black Ops (Militar), Rubik Glitch (Caos), Roboto (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik+Glitch&family=Black+Ops+One&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Iconos -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* --- PALETA CROMÁTICA OFICIAL --- */
+        :root {
+            --rojo-intenso: #ff0000;      /* Revolución / Peligro */
+            --rojo-sangre: #8a0303;       /* Profundidad */
+            --negro-profundo: #050505;    /* Underground */
+            --gris-metalico: #b0b0b0;     /* Industrial */
+            --blanco-sucio: #e0e0e0;
+            
+            --font-glitch: 'Rubik Glitch', cursive;
+            --font-army: 'Black Ops One', cursive;
+            --font-text: 'Roboto Condensed', sans-serif;
+        }
+
+        /* --- RESET Y BASES --- */
+        /* AGREGA -webkit-tap-highlight-color PARA QUITAR EL FLASH */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        html, body {
+            background-color: transparent; /* IMPORTANTE: Transparente para ver el canvas */
+            color: var(--blanco-sucio);
+            font-family: var(--font-text);
+            overflow-x: hidden; 
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* --- EFECTO DE RUIDO --- */
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 50; opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+        }
+
+        /* --- PRELOADER --- */
+        #preloader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999; display: flex; justify-content: center;
+            align-items: center; flex-direction: column; transition: opacity 0.5s ease;
+        }
+        
+        .loader-glitch {
+            font-family: var(--font-glitch); font-size: 2.5rem; color: var(--rojo-intenso);
+            text-align: center; animation: text-flicker 0.1s infinite;
+        }
+
+        @keyframes text-flicker {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        /* --- CANVAS DE FONDO (VIRUS) --- */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Detrás de todo */
+        }
+
+        /* --- LIGHTBOX (VISOR DE FOTOS) --- */
+        #lightbox {
+            display: none;
+            position: fixed; z-index: 10000; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto;
+            background-color: rgba(0,0,0,0.95);
+            justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        #lightbox img {
+            max-width: 90%; max-height: 90%;
+            box-shadow: 0 0 20px var(--rojo-intenso);
+            border: 2px solid #333;
+        }
+        #lightbox-close {
+            position: absolute; top: 20px; right: 30px;
+            color: #f1f1f1; font-size: 40px; font-weight: bold;
+            cursor: pointer; transition: 0.3s;
+        }
+        #lightbox-close:hover { color: var(--rojo-intenso); }
+
+        /* --- TIPOGRAFÍA --- */
+        .metal-text {
+            font-family: var(--font-army);
+            color: var(--gris-metalico);
+            text-transform: uppercase;
+            text-shadow: 
+                2px 2px 0px #333,
+                4px 4px 0px #111,
+                6px 6px 0px var(--rojo-sangre);
+            letter-spacing: 2px;
+        }
+
+        .glitch-title {
+            position: relative;
+            font-size: 12vw;
+            line-height: 0.9;
+            text-align: center;
+            color: var(--blanco-sucio);
+            font-family: var(--font-army);
+            mix-blend-mode: hard-light;
+            width: 100%;
+            overflow-wrap: break-word;
+        }
+
+        @media (min-width: 768px) { .glitch-title { font-size: 6rem; } }
+
+        /* --- NAV --- */
+        nav {
+            position: fixed;
+            width: 100%;
+            padding: 20px 30px;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #000; /* CAMBIO: Fondo negro sólido */
+            border-bottom: 1px solid #111;
+        }
+
+        .nav-logo { font-family: var(--font-glitch); font-size: 1.5rem; color: var(--rojo-intenso); text-shadow: 2px 2px 0 #fff; }
+        
+        .menu-btn {
+            background: transparent;
+            border: 2px solid var(--rojo-intenso);
+            color: var(--rojo-intenso);
+            padding: 8px 16px;
+            font-family: var(--font-army);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .menu-btn:hover {
+            background: var(--rojo-intenso);
+            color: black;
+            box-shadow: 0 0 15px var(--rojo-intenso);
+        }
+
+        /* MENÚ OVERLAY */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            z-index: 99;
+            transition: 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-left: 5px solid var(--rojo-intenso);
+        }
+
+        .menu-overlay.active { right: 0; }
+
+        .menu-link {
+            font-family: var(--font-army);
+            font-size: 2rem; 
+            color: var(--gris-metalico);
+            text-decoration: none;
+            margin: 10px 0;
+            text-transform: uppercase;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .menu-link:hover {
+            color: var(--rojo-intenso);
+            transform: skewX(-10deg);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            color: white;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* --- HERO --- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 100px 20px 50px;
+            width: 100%;
+        }
+
+        .hero-img-wrapper {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin-bottom: 20px;
+            z-index: 10;
+            max-width: 100%;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
+            animation: float-agresivo 4s ease-in-out infinite;
+        }
+
+        .hero-star {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140%;
+            height: 140%;
+            background: radial-gradient(circle, var(--rojo-intenso) 0%, transparent 70%);
+            opacity: 0.4;
+            z-index: -1;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            animation: pulse-star 3s infinite;
+        }
+
+        @keyframes float-agresivo {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(1deg); }
+        }
+        
+        @keyframes pulse-star {
+            0% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .subtitle {
+            font-family: var(--font-glitch);
+            color: var(--rojo-intenso);
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 100%;
+        }
+
+        /* --- BOTONES --- */
+        .btn-combat {
+            padding: 15px 40px;
+            background: transparent;
+            border: 2px solid var(--gris-metalico);
+            color: var(--gris-metalico);
+            font-family: var(--font-army);
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+
+        .btn-combat::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: var(--rojo-sangre);
+            transition: 0.4s;
+            z-index: -1;
+        }
+
+        .btn-combat:hover::before { left: 0; }
+        .btn-combat:hover { 
+            color: white; 
+            border-color: var(--rojo-intenso);
+            box-shadow: 5px 5px 0 black;
+        }
+
+        /* --- SECCIONES (TRANSPARENTES PARA EL VIRUS) --- */
+        section { 
+            padding: 80px 20px; 
+            border-bottom: 2px solid rgba(138, 3, 3, 0.4); 
+            position: relative; 
+            width: 100%;
+        }
+
+        section:nth-of-type(odd) {
+            background: rgba(0, 0, 0, 0.4); /* Mucho más transparente */
+        }
+
+        section:nth-of-type(even) {
+            background: rgba(20, 5, 5, 0.5); /* Tinte rojizo suave y transparente */
+        }
+        
+        .manifiesto-box {
+            border-left: 5px solid var(--rojo-intenso);
+            padding-left: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-title {
+            font-family: var(--font-army);
+            font-size: 3rem;
+            color: var(--gris-metalico);
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            word-wrap: break-word;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        /* CAMBIO: Optimización para celular en títulos largos */
+        @media (max-width: 600px) {
+            .section-title {
+                font-size: 2rem; /* Reduce tamaño para que quepa en un renglón */
+            }
+        }
+        
+        .section-title span { color: var(--rojo-intenso); }
+
+        .manifiesto-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #ddd;
+            text-shadow: 1px 1px 2px #000;
+        }
+        
+        .highlight { color: var(--rojo-intenso); font-weight: bold; }
+
+        /* --- LISTAS --- */
+        ul.combat-list {
+            list-style: none;
+            padding: 0;
+            color: #ccc;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 10px;
+        }
+        ul.combat-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-shadow: 1px 1px 2px #000;
+        }
+        ul.combat-list li::before { content: '>> '; color: var(--rojo-intenso); }
+        
+        /* --- INTEGRANTES GRID --- */
+        .integrantes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        /* CAMBIO: Integrantes en columna única para móvil Y ajuste de altura */
+        @media (max-width: 600px) {
+            .integrantes-grid {
+                grid-template-columns: 1fr !important; /* Fuerza 1 integrante por fila */
+            }
+            /* Solo en celular se ven muy altas */
+            .integrante-img {
+                height: 520px !important; 
+            }
+        }
+
+        .integrante-card {
+            position: relative;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #333;
+            overflow: hidden;
+            transition: all 0.4s;
+            cursor: pointer; /* Cursor pointer para indicar clic */
+        }
+
+        .integrante-card:hover {
+            transform: scale(1.05) translateY(-10px);
+            border-color: var(--rojo-intenso);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+        .integrante-img {
+            width: 100%;
+            height: 320px;  /* Altura normal para PC */
+            object-fit: cover;
+            transition: 0.4s;
+        } /* SIN FILTRO GRAYSCALE */
+
+        .integrante-info {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: rgba(0, 0, 0, 0.95); padding: 10px;
+            border-top: 2px solid var(--rojo-intenso);
+            transform: translateY(100%); transition: 0.3s;
+        }
+
+        .integrante-card:hover .integrante-info { transform: translateY(0); }
+        .integrante-info h3 { font-family: var(--font-army); color: var(--rojo-intenso); margin: 0; font-size: 1.2rem; }
+        .integrante-info p { font-family: monospace; color: #fff; margin: 0; font-size: 0.9rem; }
+
+        /* --- GALERÍA SCROLL --- */
+        .scroll-gallery-container {
+            width: 100%;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .scroll-gallery-container::-webkit-scrollbar { height: 8px; }
+        .scroll-gallery-container::-webkit-scrollbar-track { background: #111; }
+        .scroll-gallery-container::-webkit-scrollbar-thumb { background: var(--rojo-intenso); border-radius: 4px; }
+
+        .gallery-item {
+            display: inline-block;
+            width: 250px;
+            height: 250px;
+            margin-right: 15px;
+            background: #000;
+            border: 1px solid #333;
+            position: relative;
+            vertical-align: top;
+            cursor: pointer;
+        }
+
+        .gallery-item img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: 0.3s;
+        } /* SIN FILTRO GRAYSCALE */
+        
+        /* --- ESTILOS DE LISTAS DE RECURSOS (PRESS KIT) --- */
+        .resource-content {
+            display: none; /* Oculto por defecto */
+            margin-top: 20px;
+            border-top: 1px dashed var(--rojo-intenso);
+            padding-top: 20px;
+            text-align: left;
+            animation: fadeIn 0.5s ease;
+        }
+        .resource-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; border-bottom: 1px solid #333; background: rgba(0,0,0,0.6);
+            margin-bottom: 5px; transition: 0.2s;
+        }
+        .resource-item:hover { background: rgba(138, 3, 3, 0.2); border-left: 3px solid var(--rojo-intenso); }
+        .resource-item span { font-family: monospace; color: #ddd; font-size: 0.9rem; }
+        .resource-actions a, .resource-actions button {
+            color: var(--gris-metalico); margin-left: 15px; cursor: pointer; background: none; border: none;
+        }
+        .resource-actions a:hover, .resource-actions button:hover { color: var(--rojo-intenso); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- REDES SOCIALES --- */
+        .social-icons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+            align-items: center;
+        }
+        .social-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .social-icon-btn {
+            color: var(--gris-metalico);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid #333;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.8);
+        }
+        .social-icon-btn:hover {
+            color: var(--rojo-intenso);
+            border-color: var(--rojo-intenso);
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+        .social-icon-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* --- WHATSAPP BUTTON --- */
+        .btn-whatsapp {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: #25D366; color: white; text-decoration: none; padding: 15px 20px;
+            font-family: var(--font-army); font-size: 1.2rem; border: 2px solid #128C7E;
+            border-radius: 5px; transition: 0.3s; text-transform: uppercase; width: 100%;
+        }
+        .btn-whatsapp:hover { background: #128C7E; box-shadow: 0 0 15px rgba(37, 211, 102, 0.5); transform: scale(1.02); }
+
+        /* --- FORMULARIO --- */
+        input, textarea {
+            width: 100%; background: rgba(10, 10, 10, 0.8); border: 1px solid #333;
+            color: white; padding: 15px; font-family: monospace; margin-bottom: 15px; transition: 0.3s;
+        }
+        input:focus, textarea:focus { outline: none; border-color: var(--rojo-intenso); background: black; }
+
+        /* --- LINK LISTS --- */
+        .link-list a {
+            display: block; color: var(--gris-metalico); text-decoration: none; padding: 10px;
+            border-left: 2px solid #333; margin-bottom: 5px; transition: 0.3s; background: rgba(10, 10, 10, 0.6);
+        }
+        .link-list a:hover { border-left-color: var(--rojo-intenso); color: white; padding-left: 20px; background: rgba(17, 17, 17, 0.9); }
+
+        /* --- VIDEO GRID --- */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; margin-top: 20px;
+        }
+        
+        .video-card {
+            background: rgba(0, 0, 0, 0.8); border: 1px solid #333; text-decoration: none;
+            transition: 0.3s; overflow: hidden; display: block;
+        }
+        .video-card:hover { border-color: var(--rojo-intenso); transform: translateY(-5px); }
+        
+        .video-thumb { width: 100%; height: 160px; object-fit: cover; filter: grayscale(80%); transition: 0.3s; }
+        .video-card:hover .video-thumb { filter: grayscale(0%); }
+        .video-title { padding: 15px; font-family: var(--font-army); color: white; font-size: 1rem; text-align: center; }
+
+        /* --- FOOTER --- */
+        footer { background: black; padding: 40px 20px; text-align: center; border-top: 4px solid var(--rojo-intenso); }
+        
+        /* CAMBIO: Animación más fluida, ligera y dinámica (Cubic Bezier) */
+        .reveal { 
+            opacity: 0; 
+            transform: translateY(50px); 
+            transition: all 1.5s cubic-bezier(0.19, 1, 0.22, 1); /* Curva suave y elegante */
+        }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* CAMBIO: Estilos para suavizar iframes de Spotify */
+        .spotify-container iframe {
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.5s ease;
+            transform-origin: center;
+        }
+        .spotify-container iframe:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <span id="lightbox-close">&times;</span>
+        <img id="lightbox-img" src="" alt="Pantalla Completa">
+    </div>
+
+    <!-- RUIDO Y TEXTURA -->
+    <div class="noise-overlay"></div>
+    <!-- CANVAS EN EL FONDO -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- PANTALLA DE CARGA -->
+    <div id="preloader">
+        <div class="loader-glitch">INICIANDO INFECCIÓN...</div>
+        <div style="margin-top: 20px; font-family: monospace; color: #666;">CARGANDO VIRUS [||||||||||] 100%</div>
+    </div>
+
+    <!-- MENÚ -->
+    <nav>
+        <div class="nav-logo">PANDEMIA<span>SKA</span></div>
+        <button class="menu-btn" onclick="toggleMenu()">MENU //</button>
+    </nav>
+
+    <div class="menu-overlay" id="menuOverlay">
+        <button class="close-btn" onclick="toggleMenu()">✕</button>
+        <a href="#hero" class="menu-link" onclick="toggleMenu()">INICIO</a>
+        <a href="#manifiesto" class="menu-link" onclick="toggleMenu()">IDENTIDAD</a>
+        <a href="#historia" class="menu-link" onclick="toggleMenu()">HISTORIA</a>
+        <a href="#integrantes" class="menu-link" onclick="toggleMenu()">INTEGRANTES</a>
+        <a href="#trayectoria" class="menu-link" onclick="toggleMenu()">TRAYECTORIA</a>
+        <a href="#flyers" class="menu-link" onclick="toggleMenu()">FLYERS</a>
+        <a href="#reconocimientos" class="menu-link" onclick="toggleMenu()">RECONOCIMIENTOS</a>
+        <a href="#musica" class="menu-link" onclick="toggleMenu()">MÚSICA</a>
+        <a href="#prensa" class="menu-link" onclick="toggleMenu()">PRENSA</a>
+        <a href="#recursos" class="menu-link" onclick="toggleMenu()">RECURSOS</a>
+        <a href="#redes" class="menu-link" onclick="toggleMenu()">CONEXIÓN</a>
+        <a href="#contacto" class="menu-link" onclick="toggleMenu()">CONTACTO</a>
+    </div>
+
+    <!-- HERO SECTION -->
+    <section id="hero" class="hero">
+        <div class="hero-img-wrapper">
+            <div class="hero-star"></div>
+            <img src="logoPand.png" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/400x400/8a0303/FFFFFF/png?text=PANDA+RUDO'" alt="Panda Rudo con Máscara de Gas" class="hero-img" style="cursor: pointer;">
+        </div>
+        
+        <h1 class="glitch-title metal-text">PANDEMIA<br>SKA</h1>
+        <div class="subtitle">RESISTENCIA // SKA FUSIÓN DEL MÁS PUERKO</div>
+        
+        <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+            <a href="#musica" class="btn-combat">ESCUCHAR</a>
+            <a href="#contacto" class="btn-combat">CONTACTO</a>
+        </div>
+    </section>
+
+    <!-- MANIFIESTO (BIO) -->
+    <section id="manifiesto">
+        <div class="manifiesto-box reveal">
+            <h2 class="section-title">IDENTIDAD <span>VISUAL</span></h2>
+            <p class="manifiesto-text">
+                El <span class="highlight">Panda Rudo</span> con su máscara antigás no es una mascota tierna. Es un símbolo de <span class="highlight">resistencia en ambientes hostiles</span>. Representa la sobrevivencia cultural y la crítica social ante un sistema tóxico.
+            </p>
+            <p class="manifiesto-text">
+                Somos activistas callejeros con botas militares y trompetas en mano. Nuestro sonido es crudo, directo y energético. No venimos solo a festejar, venimos a dar un mensaje combativo.
+            </p>
+            <p class="manifiesto-text" style="font-family: var(--font-army); font-size: 1.5rem; margin-top: 30px; color: var(--rojo-intenso);">
+                ACTITUD CONTESTATARIA. SKA COMBATIVO.
+            </p>
+        </div>
+    </section>
+
+    <!-- HISTORIA -->
+    <section id="historia">
+        <div class="manifiesto-box reveal">
+            <h2 class="section-title">HISTORIA <span>VIRAL</span></h2>
+            <p class="manifiesto-text" style="font-family: var(--font-army); color: var(--rojo-intenso); font-size: 1.3rem;">
+                EL PARAÍSO PERDIDO SE HACE PRESENTE.
+            </p>
+            <p class="manifiesto-text">
+                La Pandemia Ska nace en el año 2017, influenciada principalmente por la fusión del género ska con estilos como rock, cumbia, reggae, y punk. 
+            </p>
+            <p class="manifiesto-text">
+                Con ocho integrantes del Estado de México y CDMX, nuestro nombre surge a partir del primordial objetivo: lograr expandir de una manera contagiosa por todo el mundo nuestra música, creada para todo tipo de oyentes.
+            </p>
+            <p class="manifiesto-text">
+                Hemos compartido escenario con grandes bandas como: Panteón Rococó, Los Victorios, La Royal Club, Rude Boys, La Trenza de la Abuela, Maskatesta, Santísima Trinidad, Real Sociedad, Los Korucos, La República, Sector Oi!, Sonora Skandalera, Los Gargars, Sekta Core, entre muchos otros.
+            </p>
+            <p class="manifiesto-text">
+                El nombre de Pandemia Ska también es porque queremos que nuestra música llegue a cualquier rincón del mundo como una epidemia.
+            </p>
+        </div>
+    </section>
+
+    <!-- GALERÍA PANDÉMICA (Sin filtro B&W) -->
+    <section id="galeria">
+        <div class="manifiesto-box reveal" style="max-width: 1000px;">
+            <h2 class="section-title">GALERÍA <span>PANDÉMICA</span></h2>
+            <div class="scroll-gallery-container">
+                <div class="gallery-item"><img src="GALERIA/gal1.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+1'" alt="Foto 1"></div>
+                <div class="gallery-item"><img src="GALERIA/gal2.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+2'" alt="Foto 2"></div>
+                <div class="gallery-item"><img src="GALERIA/gal3.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+3'" alt="Foto 3"></div>
+                <div class="gallery-item"><img src="GALERIA/gal4.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+4'" alt="Foto 4"></div>
+                <div class="gallery-item"><img src="GALERIA/gal5.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+5'" alt="Foto 5"></div>
+                <div class="gallery-item"><img src="GALERIA/gal6.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+6'" alt="Foto 6"></div>
+                <div class="gallery-item"><img src="GALERIA/gal7.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+7'" alt="Foto 7"></div>
+                <div class="gallery-item"><img src="GALERIA/gal8.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+8'" alt="Foto 8"></div>
+                <div class="gallery-item"><img src="GALERIA/gal9.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+9'" alt="Foto 9"></div>
+                <div class="gallery-item"><img src="GALERIA/gal10.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+10'" alt="Foto 10"></div>
+                <div class="gallery-item"><img src="GALERIA/gal11.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+11'" alt="Foto 11"></div>
+                <div class="gallery-item"><img src="GALERIA/gal12.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=FOTO+12'" alt="Foto 12"></div>
+            </div>
+            <p style="text-align:center; font-size:0.8rem; margin-top:10px; color:#666;">DESLIZA PARA VER MÁS &gt;&gt;</p>
+        </div>
+    </section>
+
+    <!-- SECCIÓN INTEGRANTES (CAMBIO: Sin lightbox) -->
+    <section id="integrantes">
+        <div style="max-width: 1000px; margin: 0 auto;">
+            <div style="text-align: center;">
+                <h2 class="section-title reveal">ALINEACIÓN <span>ACTIVA</span></h2>
+                <p style="color: #ccc;">ELEMENTOS DE RESISTENCIA</p>
+            </div>
+            
+            <div class="integrantes-grid reveal">
+                <div class="integrante-card"><img src="INTEGRANTES/panda.jpg" onerror="this.src='https://placehold.co/300x320/111/red/png?text=PANDA'" alt="Panda" class="integrante-img"><div class="integrante-info"><h3>PANDA</h3><p>VOZ / LÍDER</p></div></div>
+                <div class="integrante-card"><img src="INTEGRANTES/alex.jpg" onerror="this.src='https://placehold.co/300x320/111/888/png?text=ALEX'" alt="Alex" class="integrante-img"><div class="integrante-info"><h3>ALEX</h3><p>BATERÍA</p></div></div>
+                <div class="integrante-card"><img src="INTEGRANTES/rat.jpg" onerror="this.src='https://placehold.co/300x320/111/888/png?text=RAT'" alt="Rat" class="integrante-img"><div class="integrante-info"><h3>RAT</h3><p>TROMPETA</p></div></div>
+                <div class="integrante-card"><img src="INTEGRANTES/gama.jpg" onerror="this.src='https://placehold.co/300x320/111/888/png?text=GAMA'" alt="Gama" class="integrante-img"><div class="integrante-info"><h3>GAMA</h3><p>TROMBÓN</p></div></div>
+                <div class="integrante-card"><img src="INTEGRANTES/roy.jpg" onerror="this.src='https://placehold.co/300x320/111/888/png?text=RODRIGO'" alt="Rodrigo" class="integrante-img"><div class="integrante-info"><h3>RODRIGO</h3><p>TROMBÓN</p></div></div>
+                <div class="integrante-card"><img src="INTEGRANTES/charly.jpg" onerror="this.src='https://placehold.co/300x320/111/888/png?text=CHARLY'" alt="Charly" class="integrante-img"><div class="integrante-info"><h3>CHARLY</h3><p>SAX</p></div></div>
+                <div class="integrante-card"><img src="INTEGRANTES/leo.jpg" onerror="this.src='https://placehold.co/300x320/111/888/png?text=LEON'" alt="Leon" class="integrante-img"><div class="integrante-info"><h3>LEON</h3><p>GUITARRA</p></div></div>
+                <div class="integrante-card"><img src="INTEGRANTES/saul.jpg" onerror="this.src='https://placehold.co/300x320/111/888/png?text=SAUL'" alt="Saul" class="integrante-img"><div class="integrante-info"><h3>SAÚL</h3><p>GUITARRA</p></div></div>
+                <div class="integrante-card"><img src="INTEGRANTES/pig.jpg" onerror="this.src='https://placehold.co/300x320/111/888/png?text=PIG-SKA'" alt="Pig-ska" class="integrante-img"><div class="integrante-info"><h3>PIG-SKA</h3><p>BAJO</p></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRAYECTORIA -->
+    <section id="trayectoria">
+        <div class="manifiesto-box reveal">
+            <h2 class="section-title">ZONAS <span>INFECTADAS</span></h2>
+            <p class="manifiesto-text">Al comienzo tuvimos que tocar muchas puertas. Actualmente La Pandemia Ska se ha presentado en lugares de resistencia:</p>
+            
+            <ul class="combat-list">
+                <li>Tianguis cultural del chopo (CDMX)</li>
+                <li>Foro Luna (CDMX)</li>
+                <li>La hija de los apaches (CDMX)</li>
+                <li>Recinto ferial de San Isidro Metepec</li>
+                <li>La Kuka Bar (Atizapán)</li>
+                <li>Pulqueria Vacas verdes (Bellas Artes)</li>
+                <li>Café Iguana & Beto’s Bar (Monterrey N.L)</li>
+                <li>Buenos amigos Bar (Monterrey N.L)</li>
+                <li>Museo del Pulque (CDMX)</li>
+                <li>4To Festival de globos de cantoya (Tonanitla)</li>
+                <li>Chapo´s Bar (Atizapán)</li>
+                <li>Foro la vieja escuela (Tlalnepantla)</li>
+                <li>Parka Beers (CDMX)</li>
+                <li>Acayucolocos (Pachuca)</li>
+                <li>La Baba de oso (Querétaro)</li>
+                <li>Skandalazo (San Andrés Chiautla)</li>
+                <li>Almoloya Biker Fest</li>
+                <li>Foro Aztlan (Cuautitlán)</li>
+                <li>El Deshuesadero (Tultitlán)</li>
+                <li>Miktlan Pulqueria (Oaxaca)</li>
+                <li>Nasty Zombie Diner (CDMX)</li>
+                <li>Zona 23 La Lucha Extrema</li>
+                <li>El Máximo Foro</li>
+                <li style="color: var(--rojo-intenso); font-weight: bold;">Reclusorio de Santa Martha Acatitla</li>
+                <li style="color: var(--rojo-intenso); font-weight: bold;">Reclusorio Norte (CDMX)</li>
+                <li style="color: var(--rojo-intenso); font-weight: bold;">Penal de Máxima seguridad “El Diamante”</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- HITO IMPORTANTE: CHOPO -->
+    <section id="hito-chopo">
+        <div class="manifiesto-box reveal">
+            <h2 class="section-title">HITO <span>IMPORTANTE</span></h2>
+            
+            <div style="margin-bottom: 30px;">
+                <img src="GALERIA/CHOPO.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/800x500/111/8a0303/png?text=CHOPO'" alt="Tianguis Cultural del Chopo" style="width: 100%; height: auto; border: 1px solid #333; margin-bottom: 20px;">
+                
+                <h3 style="font-family: var(--font-army); color: var(--rojo-intenso); font-size: 1.5rem; margin-bottom: 15px;">PRESENTACIÓN EN EL TIANGUIS CULTURAL DEL CHOPO (07 DE FEBRERO)</h3>
+                
+                <p class="manifiesto-text">
+                    La segunda vez que Pandemia Ska se presentó en el Tianguis Cultural del Chopo quedó marcada como una tarde especial para la banda. Volver a ese espacio tan simbólico para la escena alternativa y reencontrarse con el público fue una confirmación de que el proyecto sigue avanzando y conectando con más gente en cada show. Desde los primeros temas se sintió la respuesta: slam, baile y esa vibra colectiva que solo se arma cuando banda y escenario están en la misma sintonía.
+                </p>
+                <p class="manifiesto-text">
+                    El grupo se lleva de esta presentación no solo el recuerdo del momento, sino también el agradecimiento sincero para todos los que estuvieron ahí apoyando, cantando y compartiendo la energía. Para Pandemia Ska, tocar en el Chopo no es cualquier fecha: es un punto de encuentro con la raza que mantiene viva la escena y una motivación más para seguir dándole con todo en cada presentación.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FLYERS DE EVENTOS (Sin filtro B&W) -->
+    <section id="flyers">
+        <div class="manifiesto-box reveal" style="max-width: 1000px;">
+            <h2 class="section-title">FLYERS DE <span>EVENTOS</span></h2>
+            <div class="scroll-gallery-container">
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly1.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+1'" alt="Flyer 1"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly2.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+2'" alt="Flyer 2"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly3.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+3'" alt="Flyer 3"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly4.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+4'" alt="Flyer 4"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly5.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+5'" alt="Flyer 5"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly6.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+6'" alt="Flyer 6"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly7.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+7'" alt="Flyer 7"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly8.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+8'" alt="Flyer 8"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly9.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+9'" alt="Flyer 9"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly10.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+10'" alt="Flyer 10"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly11.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+11'" alt="Flyer 11"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly12.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+12'" alt="Flyer 12"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly13.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+13'" alt="Flyer 13"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly14.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+14'" alt="Flyer 14"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly15.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+15'" alt="Flyer 15"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly16.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+16'" alt="Flyer 16"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly17.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+17'" alt="Flyer 17"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly18.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+18'" alt="Flyer 18"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly19.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+19'" alt="Flyer 19"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly20.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+20'" alt="Flyer 20"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly21.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+21'" alt="Flyer 21"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly22.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+22'" alt="Flyer 22"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly23.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+23'" alt="Flyer 23"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly24.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+24'" alt="Flyer 24"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly25.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+25'" alt="Flyer 25"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly26.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+26'" alt="Flyer 26"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly27.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+27'" alt="Flyer 27"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly28.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+28'" alt="Flyer 28"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly29.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+29'" alt="Flyer 29"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly30.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+30'" alt="Flyer 30"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly31.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+31'" alt="Flyer 31"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly32.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+32'" alt="Flyer 32"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly33.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+33'" alt="Flyer 33"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly34.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+34'" alt="Flyer 34"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly35.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+35'" alt="Flyer 35"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly36.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+36'" alt="Flyer 36"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly37.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+37'" alt="Flyer 37"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly38.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+38'" alt="Flyer 38"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly39.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+39'" alt="Flyer 39"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly40.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+40'" alt="Flyer 40"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly41.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+41'" alt="Flyer 41"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly42.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+42'" alt="Flyer 42"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly43.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+43'" alt="Flyer 43"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly44.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+44'" alt="Flyer 44"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly45.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+45'" alt="Flyer 45"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly46.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+46'" alt="Flyer 46"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly47.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+47'" alt="Flyer 47"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly48.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+48'" alt="Flyer 48"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly49.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+49'" alt="Flyer 49"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly50.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+50'" alt="Flyer 50"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly51.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+51'" alt="Flyer 51"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly52.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+52'" alt="Flyer 52"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly53.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+53'" alt="Flyer 53"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly54.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+54'" alt="Flyer 54"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly55.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+55'" alt="Flyer 55"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly56.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+56'" alt="Flyer 56"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly57.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+57'" alt="Flyer 57"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly58.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+58'" alt="Flyer 58"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly59.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+59'" alt="Flyer 59"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly60.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+60'" alt="Flyer 60"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly61.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+61'" alt="Flyer 61"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly62.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+62'" alt="Flyer 62"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly63.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+63'" alt="Flyer 63"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly64.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+64'" alt="Flyer 64"></div>
+                <div class="gallery-item" style="height:350px; width:250px;"><img src="FLYERS/fly65.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x350/111/8a0303/png?text=FLYER+65'" alt="Flyer 65"></div>
+            </div>
+            <p style="text-align:center; font-size:0.8rem; margin-top:10px; color:#666;">DESLIZA PARA VER MÁS &gt;&gt;</p>
+        </div>
+    </section>
+
+    <!-- RECONOCIMIENTOS (TEXTO) -->
+    <section id="reconocimientos">
+        <div class="manifiesto-box reveal">
+            <h2 class="section-title">LOGROS <span>DESBLOQUEADOS</span></h2>
+            <div style="background: rgba(0,0,0,0.5); padding: 20px; border: 1px dashed var(--rojo-sangre); margin-bottom: 20px;">
+                <h3 style="color: var(--rojo-intenso); font-family: var(--font-army);">GOBIERNO DE LA CIUDAD DE MÉXICO (2022)</h3>
+                <p style="font-size: 0.9rem; color: #bbb;">Subsecretaría del Sistema Penitenciario. Por destacada participación en el festival del Día del Padre en el Centro Varonil de Reinserción Social Santa Martha Acatitla.</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.5); padding: 20px; border: 1px dashed var(--rojo-sangre); margin-bottom: 20px;">
+                <h3 style="color: var(--rojo-intenso); font-family: var(--font-army);">RODOLFO Y SUS ROLLOS (2020)</h3>
+                <p style="font-size: 0.9rem; color: #bbb;">Reconocimiento por contribución en la música a nivel internacional.</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.5); padding: 20px; border: 1px dashed var(--rojo-sangre);">
+                <h3 style="color: var(--rojo-intenso); font-family: var(--font-army);">JHALEN PRODUCCIONES</h3>
+                <p style="font-size: 0.9rem; color: #bbb;">Reconocimiento por participación en aniversario (2020) y colaboración con Free Topic Media.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MÚSICA & DISCOGRAFIA -->
+    <section id="musica">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <h2 class="section-title reveal">DISCOGRA<span>FÍA</span></h2>
+            <div class="reveal" style="margin-top: 40px; background: rgba(0,0,0,0.8); padding: 20px; border: 1px solid #333;">
+                <h3 style="font-family: var(--font-army); color: var(--rojo-intenso);">ALBUM ACTUAL</h3>
+                <p style="font-size: 0.9rem; color: #ccc; margin-top: 10px;">
+                    ▶ <strong>DEMO DIGITAL:</strong> 5 Canciones.<br>
+                    ▶ <strong>EN PROCESO:</strong> Primer CD Físico.<br>
+                    ▶ <strong>COLABORACIONES:</strong> Gerardo (Vantroi).
+                </p>
+            </div>
+            <div class="reveal" style="margin-top: 40px;">
+                <h3 style="font-family: var(--font-army); color: var(--gris-metalico); margin-bottom: 20px; text-align: center;">SESIONES EN VIVO</h3>
+                <div class="video-grid">
+                    <a href="https://www.youtube.com/watch?v=wrGOmJHYels" target="_blank" class="video-card">
+                        <img src="https://img.youtube.com/vi/wrGOmJHYels/hqdefault.jpg" alt="Titanio Records" class="video-thumb">
+                        <div class="video-title">TITANIO RÉCORDS</div>
+                    </a>
+                    <a href="https://youtu.be/AJPilL8k5a4?si=CkaazEBNaBmnkEq4" target="_blank" class="video-card">
+                        <img src="https://img.youtube.com/vi/AJPilL8k5a4/hqdefault.jpg" alt="Desde la Kloaca" class="video-thumb">
+                        <div class="video-title">DESDE LA KLOACA</div>
+                    </a>
+                    <a href="https://youtu.be/JHc1-NeXwXs?si=cBJr7Z0jlIa665Hq" target="_blank" class="video-card">
+                        <img src="https://img.youtube.com/vi/JHc1-NeXwXs/hqdefault.jpg" alt="Estudios Casablanca" class="video-thumb">
+                        <div class="video-title">ESTUDIOS CASABLANCA</div>
+                    </a>
+                    <a href="https://youtu.be/oaFCOZ30xuE?si=twS4i-gMBUjjc4_b" target="_blank" class="video-card">
+                        <img src="https://img.youtube.com/vi/oaFCOZ30xuE/hqdefault.jpg" alt="Eco Casa de Ensayo" class="video-thumb">
+                        <div class="video-title">ECO CASA DE ENSAYO</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- NUEVA MINI SECCIÓN -->
+            <div class="reveal" style="margin-top: 40px;">
+                <h3 style="font-family: var(--font-army); color: var(--rojo-intenso); text-align: center; margin-bottom: 20px;">
+                    PRÓXIMA SESIÓN EN EL GARAGE <span style="font-family: var(--font-glitch); color: #fff;">CARGANDO...</span>
+                </h3>
+                <div class="scroll-gallery-container" style="text-align: center;"> <!-- Added style -->
+                    <div class="gallery-item"><img src="GARAGE/GARAGE1.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=SPOILER+1'" alt="Garage 1"></div>
+                    <div class="gallery-item"><img src="GARAGE/GARAGE2.jpg" onclick="openLightbox(this.src)" onerror="this.src='https://placehold.co/250x250/111/8a0303/png?text=SPOILER+2'" alt="Garage 2"></div>
+                </div>
+            </div>
+
+            <div class="reveal spotify-container" style="margin-top: 40px; text-align: center;">
+                <h3 style="font-family: var(--font-army); color: var(--rojo-intenso); margin-bottom: 20px;">ESCUCHA AHORA</h3>
+                <iframe style="border-radius:12px; width:100%; max-width: 100%; margin-bottom: 20px;" src="https://open.spotify.com/embed/album/0hksHtfvO6yGm88NHb7U8s?utm_source=generator" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <iframe style="border-radius:12px; width:100%; max-width: 100%; margin-bottom: 20px;" src="https://open.spotify.com/embed/album/425Ploc2f4WYqYJXnUSQHl?utm_source=generator" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <iframe style="border-radius:12px; width:100%; max-width: 100%;" src="https://open.spotify.com/embed/album/6ByWBwLAworaB8rWYD9g6Z?utm_source=generator" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRENSA -->
+    <section id="prensa">
+        <div class="manifiesto-box reveal">
+            <h2 class="section-title">PRENSA <span>ALIADA</span></h2>
+            <div class="link-list">
+                <a href="https://fb.watch/a_IY-T8QaW/" target="_blank">ALTERNO TV</a>
+                <a href="https://m.facebook.com/story.php?story_fbid=885373388704748&id=100016962840667" target="_blank">KENYRADIO TV MEXIQUENSE</a>
+                <a href="https://fb.watch/a_RI_t9CRU/" target="_blank">Somos Música</a>
+                <a href="https://fb.watch/a_SUW61ypl/" target="_blank">Interfaz</a>
+                <a href="https://fb.watch/a_T2N0jMeH/" target="_blank">Resistencia Caimán</a>
+                <a href="https://m.facebook.com/story.php?story_fbid=939746146421339&id=100011578862688" target="_blank">Museo del Pulque</a>
+                <a href="https://fb.watch/a_TPaPlzP6/" target="_blank">La Bonachona Radio</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- NUEVA SECCIÓN DE REDES -->
+    <section id="redes">
+        <div class="manifiesto-box reveal" style="text-align: center; max-width: 800px;">
+            <h2 class="section-title">CONEXIÓN <span>TOTAL</span></h2>
+            <div class="social-icons-container">
+                <!-- Fila 1: Redes Sociales -->
+                <div class="social-row">
+                    <a href="https://www.youtube.com/@pandemiaskaoficial7240/videos?app=desktop&view=0&sort=dd&shelf_id=2" target="_blank" class="social-icon-btn" title="YouTube">
+                        <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    </a>
+                    <a href="https://www.tiktok.com/@pandemiaskaoficial?lang=fil-PH" target="_blank" class="social-icon-btn" title="TikTok">
+                        <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.35-1.17 1.09-1.07 1.93.03.5.25.96.64 1.18.51.32 1.19.28 1.7.05.77-.33 1.21-1.13 1.23-1.95V4.68c0-1.57.01-3.14.01-4.71-.03-.02.03.02.05.05z"/></svg>
+                    </a>
+                    <a href="https://www.instagram.com/la_pandemia_ska/" target="_blank" class="social-icon-btn" title="Instagram">
+                        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    </a>
+                    <a href="https://www.facebook.com/lapandemiaskafusion/?locale=es_LA" target="_blank" class="social-icon-btn" title="Facebook">
+                        <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </a>
+                </div>
+                
+                <!-- Fila 2: Plataformas de Música -->
+                <div class="social-row">
+                    <a href="https://open.spotify.com/intl-es/album/425Ploc2f4WYqYJXnUSQHl?referral=labelaffiliate&utm_source=1100lC2cmgPS&utm_medium=Indie_Distrokid&utm_campaign=labelaffiliate" target="_blank" class="social-icon-btn" title="Spotify">
+                        <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                    </a>
+                    <a href="https://music.apple.com/us/album/pandemonium/1801845558" target="_blank" class="social-icon-btn" title="Apple Music">
+                        <svg viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.78 1.18-.19 2.31-.89 3.51-.84 1.54.06 2.77.83 3.48 1.84-2.68 1.67-2.3 5.53 1.02 6.93-.53 1.49-1.29 3.07-3.09 4.26zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                    </a>
+                    <a href="https://www.iheart.com/artist/la-pandemia-ska-34114368/albums/pandemonium-318506861/" target="_blank" class="social-icon-btn" title="iHeartRadio">
+                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </a>
+                    <a href="https://www.deezer.com/es/album/726614261" target="_blank" class="social-icon-btn" title="Deezer">
+                        <svg viewBox="0 0 24 24"><path d="M2 10h4v8H2zm6 0h4v8H8zm6-4h4v12h-4zm6 0h4v12h-4z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RECURSOS (PRESS KIT) - ACTUALIZADO CON LISTAS INTERACTIVAS -->
+    <section id="recursos">
+        <div class="manifiesto-box reveal" style="text-align: center;">
+            <h2 class="section-title">KIT DE <span>PRENSA</span></h2>
+            <p class="manifiesto-text">Materiales oficiales para difusión.</p>
+            
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">
+                <button class="btn-combat" onclick="toggleResources('logos-list')">LOGOS OFICIALES</button>
+                <button class="btn-combat" onclick="toggleResources('rider-list')">RIDER TÉCNICO</button>
+                <button class="btn-combat" onclick="toggleResources('prensa-list')">FOTOS (PRESS KIT)</button>
+            </div>
+
+            <!-- Lista de LOGOS -->
+            <div id="logos-list" class="resource-content">
+                <div class="resource-item">
+                    <span>LOGO OFICIAL 1 (PNG)</span>
+                    <div class="resource-actions">
+                        <button onclick="openLightbox('LOGOS/LOG1.png')"><i data-lucide="eye"></i></button>
+                        <a href="LOGOS/LOG1.png" download><i data-lucide="download"></i></a>
+                    </div>
+                </div>
+                <div class="resource-item">
+                    <span>LOGO OFICIAL 2 (PNG)</span>
+                    <div class="resource-actions">
+                        <button onclick="openLightbox('LOGOS/LOG2.png')"><i data-lucide="eye"></i></button>
+                        <a href="LOGOS/LOG2.png" download><i data-lucide="download"></i></a>
+                    </div>
+                </div>
+                <div class="resource-item">
+                    <span>LOGO OFICIAL 3 (PNG)</span>
+                    <div class="resource-actions">
+                        <button onclick="openLightbox('LOGOS/LOG3.png')"><i data-lucide="eye"></i></button>
+                        <a href="LOGOS/LOG3.png" download><i data-lucide="download"></i></a>
+                    </div>
+                </div>
+                <div class="resource-item">
+                    <span>LOGO OFICIAL 4 (PNG)</span>
+                    <div class="resource-actions">
+                        <button onclick="openLightbox('LOGOS/LOG4.png')"><i data-lucide="eye"></i></button>
+                        <a href="LOGOS/LOG4.png" download><i data-lucide="download"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de RIDER -->
+            <div id="rider-list" class="resource-content">
+                <div class="resource-item">
+                    <span>RIDER TÉCNICO PANDEMIA SKA (PDF)</span>
+                    <div class="resource-actions">
+                        <a href="RIDER_TECN-PANDEMIA.pdf" target="_blank"><i data-lucide="eye"></i></a>
+                        <a href="RIDER_TECN-PANDEMIA.pdf" download><i data-lucide="download"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de FOTOS PRENSA -->
+            <div id="prensa-list" class="resource-content">
+                <div class="resource-item"><span>FOTO PRENSA 1</span><div class="resource-actions"><button onclick="openLightbox('FOTOSPRENSA/PRENSA1.jpg')"><i data-lucide="eye"></i></button><a href="FOTOSPRENSA/PRENSA1.jpg" download><i data-lucide="download"></i></a></div></div>
+                <div class="resource-item"><span>FOTO PRENSA 2</span><div class="resource-actions"><button onclick="openLightbox('FOTOSPRENSA/PRENSA2.jpg')"><i data-lucide="eye"></i></button><a href="FOTOSPRENSA/PRENSA2.jpg" download><i data-lucide="download"></i></a></div></div>
+                <div class="resource-item"><span>FOTO PRENSA 3</span><div class="resource-actions"><button onclick="openLightbox('FOTOSPRENSA/PRENSA3.jpg')"><i data-lucide="eye"></i></button><a href="FOTOSPRENSA/PRENSA3.jpg" download><i data-lucide="download"></i></a></div></div>
+                <div class="resource-item"><span>FOTO PRENSA 4</span><div class="resource-actions"><button onclick="openLightbox('FOTOSPRENSA/PRENSA4.jpg')"><i data-lucide="eye"></i></button><a href="FOTOSPRENSA/PRENSA4.jpg" download><i data-lucide="download"></i></a></div></div>
+                <div class="resource-item"><span>FOTO PRENSA 5</span><div class="resource-actions"><button onclick="openLightbox('FOTOSPRENSA/PRENSA5.jpg')"><i data-lucide="eye"></i></button><a href="FOTOSPRENSA/PRENSA5.jpg" download><i data-lucide="download"></i></a></div></div>
+                <div class="resource-item"><span>FOTO PRENSA 6</span><div class="resource-actions"><button onclick="openLightbox('FOTOSPRENSA/PRENSA6.jpg')"><i data-lucide="eye"></i></button><a href="FOTOSPRENSA/PRENSA6.jpg" download><i data-lucide="download"></i></a></div></div>
+                <div class="resource-item"><span>FOTO PRENSA 7</span><div class="resource-actions"><button onclick="openLightbox('FOTOSPRENSA/PRENSA7.jpg')"><i data-lucide="eye"></i></button><a href="FOTOSPRENSA/PRENSA7.jpg" download><i data-lucide="download"></i></a></div></div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section id="contacto" style="background: rgba(8,8,8, 0.7);">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <h2 class="section-title reveal" style="text-align: center;">CONTRATACIONES</h2>
+            <p style="text-align: center; color: #ccc; margin-bottom: 30px;">
+                SOLO PROPUESTAS SERIAS. FESTIVALES, FOROS, RESISTENCIA.
+            </p>
+            
+            <div class="reveal" style="text-align: center; border: 2px solid var(--rojo-sangre); padding: 30px; background: rgba(0,0,0,0.8);">
+                
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: var(--gris-metalico); font-family: var(--font-army); margin-bottom: 10px;">JESÚS BARRON</h3>
+                    <a href="https://wa.me/5215633515045" class="btn-whatsapp" target="_blank">
+                        <i data-lucide="message-circle"></i> 56 3351 5045
+                    </a>
+                </div>
+
+                <div style="margin-top: 40px; border-top: 1px solid #333; padding-top: 20px;">
+                    <h3 style="color: var(--rojo-intenso); font-family: var(--font-army);">CORREO OFICIAL</h3>
+                    <a href="mailto:pandemia123ska@gmail.com" style="color: var(--gris-metalico); text-decoration: none; font-size: 1.1rem; word-break: break-all;">pandemia123ska@gmail.com</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p style="font-family: var(--font-army); color: #444;">&copy; 2026 PANDEMIA SKA. TODOS LOS DERECHOS RESERVADOS.</p>
+    </footer>
+
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+
+        // 1. PRELOADER
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById('preloader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('preloader').style.display = 'none';
+                }, 500);
+            }, 1500);
+        };
+
+        // 2. MENU TOGGLE
+        function toggleMenu() {
+            const menu = document.getElementById('menuOverlay');
+            menu.classList.toggle('active');
+        }
+
+        // 3. SCROLL REVEAL
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // 4. FONDO VIRUS INFORMÁTICO
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const characters = 'PANDEMIA SKA 010101 VIRUS ERROR ☠☣';
+        const fontSize = 14;
+        let columns = canvas.width / fontSize;
+        let drops = [];
+
+        function initDrops() {
+             columns = canvas.width / fontSize;
+             drops = [];
+             for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+             }
+        }
+        initDrops();
+        window.addEventListener('resize', initDrops);
+
+        function draw() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#8a0303';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                if(Math.random() > 0.90) { // Aumentado para que resalte más
+                    ctx.fillStyle = '#ff0000';
+                } else {
+                    ctx.fillStyle = '#8a0303';
+                }
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(draw, 33);
+
+        // 5. FUNCIONES PARA RECURSOS Y LIGHTBOX
+        function toggleResources(id) {
+            // Cierra todos primero
+            document.querySelectorAll('.resource-content').forEach(el => el.style.display = 'none');
+            // Abre el seleccionado
+            const content = document.getElementById(id);
+            if (content) content.style.display = 'block';
+        }
+
+        function openLightbox(src) {
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            img.src = src;
+            lightbox.style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+    </script>
+
+</body>
+</html>
